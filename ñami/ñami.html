@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cuando no hay na, ÑAMI.</title>
+
+    <!-- Fuente -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      :root{
+        --nami-red:#D01C1F; /* principal */
+        --nami-pink:#FBD3DA;
+        --nami-ink:#27272A;
+        --nami-bone:#F0EEE9;
+      }
+      *{box-sizing:border-box}
+      body{
+        overflow:hidden; /* evita scroll */
+        margin:0;
+        font-family:"Montserrat Alternates", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        color:var(--nami-ink);
+        background:linear-gradient(180deg,var(--nami-pink) 0%, var(--nami-bone) 100%);
+        min-height:100vh;
+      }
+      .container{max-width:1120px;margin:0 auto;padding:20px;height:100vh;display:flex;flex-direction:column;justify-content:center}
+      header .brand{display:flex;align-items:center;gap:12px}
+      header img.logo{height:40px;display:block}
+      h1{margin:0;font-size:28px;line-height:1.2;font-weight:700}
+      .slogan{font-weight:700;color:var(--nami-ink)}
+      .sub{margin-top:8px;max-width:680px;color:#4b5563;font-size:14px}
+      .pills{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+      .pill{padding:10px 14px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;color:var(--nami-ink);font-size:13px;cursor:pointer}
+      .pill.active{background:var(--nami-red);border-color:var(--nami-red);color:#fff}
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:20px}
+      .card{background:#fff;border:1px solid #e5e7eb;border-radius:24px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:20px}
+      .wheel{aspect-ratio:1/1;border:1px solid #e5e7eb;border-radius:24px;display:flex;align-items:center;justify-content:center;padding:16px}
+      .spin-btn{background:var(--nami-red);color:#fff;padding:10px 14px;border-radius:14px;border:1px solid var(--nami-red);font-size:14px;cursor:pointer}
+      .ghost-btn{background:var(--nami-pink);color:var(--nami-ink);padding:10px 14px;border-radius:14px;border:1px solid #e5e7eb;font-size:14px;cursor:pointer}
+      .tiny{font-size:12px;color:#6b7280}
+      ul.recipes{margin-top:12px;padding-left:18px;font-size:13px}
+      footer{color:#9ca3af;text-align:center;margin:28px 0 16px;font-size:12px}
+      /* efecto de ruleta simple */
+      .ticker{font-size:18px;font-weight:600;text-align:center;padding:0 8px}
+      .spinning{animation:spin 800ms linear infinite}
+      @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- React + ReactDOM (UMD) + Babel para interpretar JSX en el navegador -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel" data-presets="env,react">
+      const { useState, useMemo, useEffect } = React;
+
+      // === DATA: 10 recetas por categoría (demo). Reemplazá por las tuyas ===
+      const RECIPES = {
+        "Celiaco": [
+          { title: "Tacos de pollo", time: 20, difficulty: "Media", link: "#" },
+          { title: "Mini pizzas de berenjena", time: 25, difficulty: "Media", link: "#"},
+          { title: "Hamburguesa con pan de nube", time: 25, difficulty: "Fácil", link: "#" },
+          { title: "Chips de boniato y  huevos revueltos", time: 15, difficulty: "Fácil", link: "#" },
+          { title: "Rollitos de calabacín", time: 25, difficulty: "Media", link: "#" },
+          { title: " Mini tostaditas de patata rallada", time: 20, difficulty: "Fácil", link: "#" },
+          { title: "Pollo rebozado con copos de maíz y canapés de pepino", time: 20, difficulty: "Media", link: "#" },
+          { title: "Pizza con base de patata", time: 25, difficulty: "Fácil", link: "#" },
+          { title: "Berenjenas rellenas", time: 25, difficulty: "Media", link: "#" },
+          { title: "Bolitas de falafel con salsa de yogur", time: 20, difficulty: "Fácil", link: "#" },
+        ],
+        "Veggie": [
+          { title: "Pasta con pesto de espinacas", time: 20, difficulty: "Media", link: "#" },
+          { title: "Salteado de tofu con verduras", time: 15, difficulty: "Fácil", link: "#" },
+          { title: "Sopa cremosa de calabaza", time: 25, difficulty: "Fácil", link: "#" },
+          { title: "Curry de garbanzos", time: 25, difficulty: "Medio", link: "#" },
+          { title: "Ensalada tibia de quinoa y verduras", time: 16, difficulty: "Fácil", link: "#" },
+          { title: "Hamburguesas veganas", time: 30, difficulty: "Medio", link: "#" },
+          { title: "Berenjenas rellenas mediterráneas (vegano)", time: 30, difficulty: "Media", link: "#" },
+          { title: "Wraps de hummus y vegetales frescos (vegano)", time: 10, difficulty: "Media", link: "#" },
+          { title: "Ensalada rápida de lentejas", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "Pasta Alfredo vegana", time: 20, difficulty: "Media", link: "#" },
+        ],
+        "Postres": [
+          { title: "Bowl de granola", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Datiles", time: 25, difficulty: "Media", link: "#" },
+          { title: "Galletas de avena con canela", time: 20, difficulty: "Media", link: "#" },
+          { title: "-", time: 18, difficulty: "Fácil", link: "#" },
+          { title: "-", time: 15, difficulty: "Fácil", link: "#" },
+          { title: "-", time: 16, difficulty: "Fácil", link: "#" },
+          { title: "-", time: 24, difficulty: "Media", link: "#" },
+          { title: "-", time: 8, difficulty: "Fácil", link: "#" },
+          { title: "-", time: 28, difficulty: "Media", link: "#" },
+          { title: "-", time: 30, difficulty: "Media", link: "#" },
+        ],
+        "De la yaya": [
+          { title: "Crema de calabacín", time: 20, difficulty: "Fácil", link: "#" },
+          { title: "Gazpacho andaluz", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "Sopa de ajo rápida", time: 15, difficulty: "Fácil", link: "#" },
+          { title: " Sopa de fideos instantánea", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "Crema de champiñones", time: 20, difficulty: "Fácil", link: "#" },
+          { title: "Lentejas rápidas con verduras", time: 40, difficulty: "Media", link: "#" },
+          { title: "Fabada rápida (con alubias cocidas)", time: 35, difficulty: "Media", link: "#" },
+          { title: "Cocido madrileño rápido", time: 45, difficulty: "Media", link: "#" },
+          { title: "Estofado de ternera exprés", time: 40, difficulty: "Fácil", link: "#" },
+          { title: "Arroz caldoso", time: 35, difficulty: "Media", link: "#" },
+        ],
+        "Sandwiches": [
+          { title: "Sandwich de pollo y queso con mostaza miel", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "El mítico by La Sheili", time: 12, difficulty: "Fácil", link: "#" },
+          { title: "Sándwich BTL", time: 8, difficulty: "Fácil", link: "#" },
+          { title: "Sándwich de aguacate, tomate y queso fresco", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Un manjar", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Sándwich vegetal", time: 8, difficulty: "Fácil", link: "#" },
+          { title: "Sándwich de pollo, queso brie y cebolla caramelizada", time: 15, difficulty: "Fácil", link: "#" },
+          { title: "Sándwich caprese", time: 8, difficulty: "Fácil", link: "#" },
+          { title: "Sándwich de salmón ahumado con crema de queso y pepino", time: 7, difficulty: "Fácil", link: "#" },
+          { title: "Sándwich de ternera con cebolla y queso crema", time: 15, difficulty: "Fácil", link: "#" },
+        ],
+        "Tapeo/aperitivo": [
+          { title: "Mini barquitos de aguacate", time:10, difficulty: "Fácil", link: "" },
+          { title: "Bolitas de queso y jamón", time: 15, difficulty: "Fácil", link: "#" },
+          { title: "ÑumiBites - Mini croissants salados", time: 15, difficulty: "Fácil", link: "#" },
+          { title: "Tostaditas mediterráneass", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "Canapés de atún y huevo", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "Panecillos rellenos de brie y mermelada", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "Pinchos fríos de jamón, piña y mozzarella", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Patatas alioli exprés", time: 12, difficulty: "Fácil", link: "#" },
+          { title: " Tortillitas exprés en molde de magdalena", time: 15, difficulty: "Fácil", link: "#" },
+          { title: "Mini tostadas de guacamole", time: 10, difficulty: "Fácil", link: "#" },
+        ],
+        "Edición especial Navidad": [
+          { title: "Mumias de salchicha y hojaldre", time: 30, difficulty: "Media", link: "#" },
+          { title: "Estrellas de patata y romero", time: 25, difficulty: "Media", link: "#" },
+          { title: "Bocaditos de muñeco de nieve", time: 30, difficulty: "Media", link: "#" },
+          { title: "Copas de Yogur “Nieve de Invierno”", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "Copos de nieve de pollo crujiente", time: 25, difficulty: "Media", link: "#" },
+          { title: "Bastones de “Navidad” de pretzel y chocolate", time: 10, difficulty: "Fácil", link: "#" },
+          { title: "Galletas de jengibre rápidas", time: 20, difficulty: "Media", link: "#" },
+          { title: "Renos de plátano y chocolate", time: 12, difficulty: "Fácil", link: "#" },
+          { title: "Ensalada de “Ñavidad” con mandarina", time: 30, difficulty: "Media", link: "#" },
+          { title: "Trufas de chocolate", time: 14, difficulty: "Fácil", link: "#" },
+        ],
+        "Para los Cocktails": [
+          { title: "Menta Loca", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Explosión Tropical", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Frambuesa Picante", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Melón Zen", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Citrico Fogoso", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "La cereza mágica", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Sunny ginger", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Coco Matcha", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Cucumber Fizz", time: 5, difficulty: "Fácil", link: "#" },
+          { title: "Hurricane", time: 5, difficulty: "Fácil", link: "#" },
+        ],
+      };
+
+      const categories = Object.keys(RECIPES);
+
+      function useTicker(items, spinning){
+        const [display, setDisplay] = useState(items[0] || "");
+        useEffect(()=>{
+          if(!spinning || items.length===0) return;
+          let i = 0;
+          const id = setInterval(()=>{
+            i = (i+1) % items.length;
+            setDisplay(items[i]);
+          }, 80);
+          return ()=>clearInterval(id);
+        }, [spinning, items]);
+        return display;
+      }
+
+      function App(){
+        const [activeCat, setActiveCat] = useState(categories[0]);
+        const pool = useMemo(()=> RECIPES[activeCat] ?? [], [activeCat]);
+        const [spinning, setSpinning] = useState(false);
+        const [result, setResult] = useState(null);
+        const ticker = useTicker(pool.map(r=>r.title), spinning);
+
+        const spin = ()=>{
+          if(spinning || pool.length===0) return;
+          setResult(null);
+          setSpinning(true);
+          const target = Math.floor(Math.random()*pool.length);
+          setTimeout(()=>{
+            setSpinning(false);
+            setResult(pool[target]);
+          }, 1600 + Math.random()*1200);
+        };
+
+        return (
+          <div className="container">
+            <header>
+              <div className="brand">
+                {/* Reemplazá la ruta por tu logo real (por ejemplo: ./assets/logo-nami.png) */}
+                <img class="logo" src="./logo-nami.png" alt="Ñami" />
+                <div>
+                  <h1>Cuando no hay na, Ñami.</h1>
+                </div>
+              </div>
+              <p className="sub">Elegí una categoría y tocá <strong>Girar</strong>. Te proponemos 10 recetas propias con tiempo y dificultad.</p>
+            </header>
+
+            <div className="pills">
+              {categories.map(cat=> (
+                <button key={cat} className={"pill" + (cat===activeCat?" active":"")} onClick={()=>setActiveCat(cat)}>{cat}</button>
+              ))}
+            </div>
+
+            <div className="grid">
+              <div className="card">
+                <div className={"wheel" + (spinning?" spinning":"") }>
+                  <div className="ticker">{spinning ? ticker : (result?.title || ticker || "—")}</div>
+                </div>
+                <p className="tiny" style={{marginTop:8}}>Categoría: {activeCat}</p>
+                <div style={{marginTop:12, display:"flex", gap:8, flexWrap:"wrap"}}>
+                  <button className="spin-btn" onClick={spin} disabled={spinning}>{spinning?"Girando…":"¡Girar!"}</button>
+                  <button className="ghost-btn" onClick={()=>setResult(null)}>Limpiar</button>
+                </div>
+              </div>
+
+              <div className="card">
+                <div style={{display:"flex", alignItems:"center", gap:8, fontWeight:700}}>🔥 Tu sugerencia de hoy</div>
+                <div style={{marginTop:12}}>
+                  {result ? (
+                    <div>
+                      <div style={{fontSize:20, fontWeight:600}}>{result.title}</div>
+                      <div style={{marginTop:8, display:"flex", gap:12, fontSize:14, color:"#4b5563"}}>
+                        <span>⏱ {result.time} min</span>
+                        <span>• {result.difficulty}</span>
+                      </div>
+                      <div style={{marginTop:12, display:"flex", gap:8, flexWrap:"wrap"}}>
+                        <a className="ghost-btn" href={result.link} target="_blank" rel="noreferrer" style={{textDecoration:"none"}}>Ver receta</a>
+                        <button className="spin-btn" onClick={spin}>Otra opción</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="tiny" style={{fontSize:14}}>Tocá “Girar” para obtener una receta de {activeCat}.</p>
+                  )}
+                </div>
+
+                <div style={{marginTop:14}}>
+                  <div style={{fontWeight:600, fontSize:14}}>Las 10 recetas de esta categoría</div>
+                  <ul className="recipes">
+                    {pool.map(r=> (
+                      <li key={r.title} style={{display:"flex", justifyContent:"space-between", gap:8, padding:"2px 0"}}>
+                        <span>{r.title}</span>
+                        <span className="tiny">{r.time} min · {r.difficulty}</span>
+						
+						<a
+  className="ghost-btn"
+  href="./receta1tapeo.html"
+  onClick={(e) => {
+    try {
+      localStorage.setItem(
+        "nami:lastRecipe",
+        JSON.stringify({ ...result, category: activeCat, steps: getSteps(result) })
+      );
+    } catch (_) {}
+  }}
+  style={{ textDecoration: "none" }}
+>
+  Ver receta
+</a>
+
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <footer>Hecho con ❤ — Ñami</footer>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
+
+
+
