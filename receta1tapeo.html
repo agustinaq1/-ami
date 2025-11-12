@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Receta — Ñami</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      :root{
+        --nami-red:#D01C1F; /* principal */
+        --nami-pink:#FBD3DA;
+        --nami-ink:#27272A;
+        --nami-bone:#F0EEE9;
+      }
+      *{box-sizing:border-box}
+      body{margin:0;font-family:"Montserrat Alternates", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;color:var(--nami-ink);background:linear-gradient(180deg,var(--nami-pink) 0%, var(--nami-bone) 100%);}  
+      .wrap{max-width:960px;margin:0 auto;padding:24px 20px}
+      header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+      header img{height:44px}
+      h1{margin:10px 0 0 0;font-size:28px;line-height:1.2}
+      .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+      .chip{background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:8px 12px;font-size:13px}
+      .content{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:18px}
+      .card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:16px}
+      .card h3{margin:0 0 8px 0;font-size:16px}
+      .steps ol{margin:6px 0 0 18px;line-height:1.5}
+      .ing ul{margin:6px 0 0 18px;line-height:1.5}
+      .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+      .btn{background:var(--nami-red);color:#fff;border:1px solid var(--nami-red);padding:10px 14px;border-radius:12px;text-decoration:none;font-size:14px}
+      .ghost{background:#fff;color:var(--nami-ink);border:1px solid #e5e7eb}
+      .empty{padding:16px;background:#fff2f2;border:1px dashed var(--nami-red);border-radius:12px;color:#7f1d1d}
+      @media (max-width:900px){.content{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <img src="./logo-nami.png" alt="Ñami" onerror="this.style.display='none'"/>
+        <div>
+          <div style="font-weight:700;color:var(--nami-red);">Cuando no hay na, ÑAMI.</div>
+          <h1 id="title">—</h1>
+          <div class="meta">
+            <div class="chip" id="time">⏱ 25min</div>
+            <div class="chip" id="diff">Media</div>
+            <div class="chip" id="cat">Celíacos</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="card steps">
+          <h3>Cómo hacerlo</h3>
+          <ol id="steps"> Preparación:</ol>
+<ol> 1.Bate las claras de los huevos a punto nieve </ol>
+<ol> 2.Añadir el queso crema y la levadura </ol> 
+<ol> 3.Mete la mezcla en el horno en moldes redondos durante 20 min a 200°C.</ol>
+<ol> 4.Mientras tanto, cocina en la sartén la hamburguesa.</ol>
+<ol> 5.Monta la hamburguesa con el queso, la lechuga y el tomate.</ol>
+         
+        </section>
+        <aside class="card ing">
+          <h3>Ingredientes</h3>
+          <ul id="huevo"> Huevos </ul>  
+		  <ul id="queso"> Queso crema </ul>
+		  <ul id="levadura"> Levadura </ul>
+			  <ul id="Sal al gusto"> Sal al gusto </ul>
+			  <ul id="Hamburguesas de tu gusto"> Hamburguesas de tu gusto </ul>
+		<ul id="Queso, lechuga y tomate"> Queso, lechuga y tomate </ul>
+          
+			 <div class="actions">
+            <button class="btn ghost" id="shareBtn" type="button">Compartir</button>
+            <button class="btn ghost" onclick="window.print()" type="button">Imprimir</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+      function loadRecipe(){
+        try{
+          const raw = localStorage.getItem('nami:lastRecipe');
+          if(!raw) return null;
+          return JSON.parse(raw);
+        }catch(e){ return null; }
+      }
+
+      const data = loadRecipe();
+      const titleEl = document.getElementById('title');
+      const timeEl = document.getElementById('time');
+      const diffEl = document.getElementById('diff');
+      const catEl = document.getElementById('cat');
+      const stepsEl = document.getElementById('steps');
+      const ingEl = document.getElementById('ingredients');
+      const noIng = document.getElementById('noIng');
+
+      if(!data){
+        titleEl.textContent = 'HAMBURGESAS CON PAN DE NUBE';
+        const li = document.createElement('li');
+        X        
+		stepsEl.appendChild(li);
+        document.querySelector('.actions').style.display = 'none';
+      } else {
+        titleEl.textContent = data.title || 'Receta';
+        timeEl.textContent = `⏱ ${data.time ?? '—'} min`;
+        diffEl.textContent = data.difficulty || '—';
+        catEl.textContent = data.category || '—';
+
+        // Steps
+        const steps = Array.isArray(data.steps) ? data.steps : [];
+        if(steps.length){
+          steps.forEach((s)=>{ const li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li); });
+        } else {
+          const li = document.createElement('li'); li.textContent = 'No hay pasos cargados para esta receta.'; stepsEl.appendChild(li);
+        }
+
+        // Ingredients (opcional)
+        if(Array.isArray(data.ingredients) && data.ingredients.length){
+          data.ingredients.forEach((it)=>{ const li = document.createElement('li'); li.textContent = it; ingEl.appendChild(li); });
+        } else {
+          noIng.style.display = 'block';
+        }
+      }
+
+      // Share
+      const shareBtn = document.getElementById('shareBtn');
+      shareBtn?.addEventListener('click', async () => {
+        const text = `${titleEl.textContent} — ${timeEl.textContent.replace('⏱ ','')} — ${diffEl.textContent}`;
+        if(navigator.share){
+          try{ await navigator.share({ title: 'Ñami – receta', text, url: location.href }); } catch(e){}
+        }else{
+          navigator.clipboard?.writeText(text);
+          shareBtn.textContent = 'Copiado';
+          setTimeout(()=> shareBtn.textContent = 'Compartir', 1400);
+        }
+      });
+    </script>
+  </body>
+</html>
+
+
